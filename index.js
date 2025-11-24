@@ -1,19 +1,17 @@
 // ===================== IMPORT MODULES =====================
-require('dotenv').config();           // Load environment variables
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const flash = require('connect-flash');
 const fileUpload = require('express-fileupload');
 const cloudinary = require('cloudinary').v2;
-const path = require('path');
 
-// -------------------- MIDDLEWARE --------------------
+// Custom middleware & controllers
 const validateMiddleWare = require('./middleware/validationMiddleware');
 const authMiddleware = require('./middleware/authMiddleware');
 const redirectIfAuthenticatedMiddleware = require('./middleware/redirectIfAuthenticatedMiddleware');
 
-// -------------------- CONTROLLERS --------------------
 const homeController = require('./controllers/home');
 const newPostController = require('./controllers/newPost');
 const storePostController = require('./controllers/storePost');
@@ -23,49 +21,69 @@ const storeUserController = require('./controllers/storeUser');
 const loginController = require('./controllers/login');
 const loginUserController = require('./controllers/loginUser');
 const logoutController = require('./controllers/logout');
+const multer = require('multer');
+const { storage } = require('./config/cloudinary');
+const upload = multer({ storage });
 
-// -------------------- APP SETUP --------------------
+// ===================== APP SETUP =====================
 const app = express();
 app.set('view engine', 'ejs');
-global.loggedIn = null;
 
-// -------------------- DATABASE --------------------
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error('MongoDB connection error:', err));
-
-// -------------------- CLOUDINARY --------------------
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// -------------------- MIDDLEWARE --------------------
+// ===================== MIDDLEWARE =====================
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload());
-app.use('/posts/store', validateMiddleWare);
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false
 }));
-
 app.use(flash());
 
-// Track logged-in user globally
-app.use('*', (req, res, next) => {
-    loggedIn = req.session.userId || null;
+// Make flash messages available in all templates
+app.use((req, res, next) => {
+    res.locals.flashMessages = req.flash();
     next();
 });
 
-// -------------------- ROUTES --------------------
+
+// Make current user available in all views
+app.use((req, res, next) => {
+    res.locals.loggedIn = req.session.userId || null;
+    res.locals.flashMessages = req.flash();
+    next();
+});
+
+// Apply validation middleware only to post storage
+app.use('/posts/store', validateMiddleWare);
+
+// ===================== DATABASE =====================
+// === MONGODB CONNECTION ===
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Connected to MongoDB Atlas'))
+.catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1); // exit if DB fails
+});
+    
+// Start server only after DB is connected
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
+
+// ===================== CLOUDINARY =====================
+// === CLOUDINARY CONFIG ===
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// ===================== ROUTES =====================
 // Home page
 app.get('/', homeController);
 
@@ -77,6 +95,8 @@ app.get('/posts/new', authMiddleware, newPostController);
 
 // Store post (protected)
 app.post('/posts/store', authMiddleware, storePostController);
+
+app.post('/posts/store', upload.single('image'), storePostController);
 
 // Registration routes
 app.get('/auth/register', redirectIfAuthenticatedMiddleware, newUserController);
@@ -90,8 +110,4 @@ app.post('/users/login', redirectIfAuthenticatedMiddleware, loginUserController)
 app.get('/auth/logout', logoutController);
 
 // 404 Page
-app.use((req, res) => res.render('notfound'));
-
-// -------------------- SERVER --------------------
-const PORT = process.env.PORT || 4000;   // Use Render-assigned port or 4000 locally
-app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
+app.use((req, res) => res.status(404).render('notfound'));

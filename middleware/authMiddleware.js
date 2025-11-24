@@ -1,24 +1,42 @@
+const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
     try {
-        if (!req.session.userId) {
-            return res.redirect('/login');
-        }
+        const { username, password } = req.body;
 
-        // Use await instead of callback
-        const user = await User.findById(req.session.userId);
+        // 1️⃣ Find user by username
+        const user = await User.findOne({ username });
 
         if (!user) {
-            return res.redirect('/login');
+            req.flash('loginError', 'Invalid username or password');
+            return res.redirect('/auth/login');
         }
 
-        // Attach user to request object if needed
-        req.user = user;
+        // 2️⃣ Compare password with hashed password
+        const passwordMatch = await bcrypt.compare(password, user.password);
 
-        next();
-    } catch (err) {
-        console.error(err);
-        res.redirect('/login');
+        if (!passwordMatch) {
+            req.flash('loginError', 'Invalid username or password');
+            return res.redirect('/auth/login');
+        }
+
+        // 3️⃣ Login successful — save session
+        req.session.userId = user._id;
+
+        // Ensure session is saved before redirect
+        req.session.save(err => {
+            if (err) {
+                console.error(err);
+                req.flash('loginError', 'Something went wrong. Please try again.');
+                return res.redirect('/auth/login');
+            }
+            return res.redirect('/'); // ✅ redirect to home
+        });
+
+    } catch (error) {
+        console.error(error);
+        req.flash('loginError', 'Something went wrong. Please try again.');
+        return res.redirect('/auth/login');
     }
 };
