@@ -17,16 +17,18 @@ module.exports = async (req, res) => {
             return res.redirect('/auth/login');
         }
 
-        // ✅ Save user ID in session
         req.session.userId = user._id;
+        req.session.save(err => {
+            if (err) {
+                req.flash('loginError', 'Something went wrong');
+                return res.redirect('/auth/login');
+            }
+            return res.redirect('/');
+        });
 
-        // Optional: log the session to debug
-        console.log('Logged in userId:', req.session.userId);
-
-        return res.redirect('/');
     } catch (err) {
         console.error(err);
-        req.flash('loginError', 'Something went wrong.');
+        req.flash('loginError', 'Something went wrong');
         return res.redirect('/auth/login');
     }
 };
