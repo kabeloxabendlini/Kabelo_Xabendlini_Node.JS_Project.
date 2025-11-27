@@ -24,14 +24,13 @@ module.exports = async (req, res) => {
         // 3️⃣ Login successful — save session
         req.session.userId = user._id;
 
-        // Ensure session is saved before redirect
         req.session.save(err => {
             if (err) {
                 console.error(err);
                 req.flash('loginError', 'Something went wrong. Please try again.');
                 return res.redirect('/auth/login');
             }
-            return res.redirect('/'); // ✅ redirect to home
+            return res.redirect('/'); 
         });
 
     } catch (error) {

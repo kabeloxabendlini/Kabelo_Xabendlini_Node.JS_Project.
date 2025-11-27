@@ -1,13 +1,22 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const BlogPost = require('./models/BlogPost');
+const User = require('./models/User');
 
-const BlogPost = require('./models/BlogPost')
+mongoose.connect('mongodb://localhost/my_database', { useNewUrlParser: true });
 
-mongoose.connect('mongodb://localhost/my_database',{useNewUrlParser: true});
+const id = "605d16b1b0e8f94779dacaea";
 
-var id = "605d16b1b0e8f94779dacaea"
+BlogPost.findByIdAndDelete(id)
+  .then(result => {
+    console.log("Deleted Post:", result);
 
-BlogPost.findByIdAndDelete(id,{
-    title:'updated title'
-},(error,blogspot)=>{
-    console.log(error,blogspot)
-})
+    return User.find();
+  })
+  .then(users => {
+    console.log("Users:", users);
+    mongoose.connection.close();
+  })
+  .catch(err => {
+    console.log(err);
+    mongoose.connection.close();
+  });

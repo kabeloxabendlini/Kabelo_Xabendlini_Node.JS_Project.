@@ -1,20 +1,24 @@
+const cloudinary = require('../config/cloudinary');
 const Post = require('../models/Post');
-const { cloudinary } = require('../config/cloudinary');
 
 module.exports = async (req, res) => {
     try {
-        const imageUrl = req.file?.path || null;
+        let imageUrl = null;
+
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            imageUrl = result.secure_url;
+        }
 
         await Post.create({
-            ...req.body,
-            image: imageUrl,
-            author: req.session.userId
+            title: req.body.title,
+            content: req.body.content,
+            image: imageUrl
         });
 
         res.redirect('/');
     } catch (err) {
-        console.error(err);
-        req.flash("error", "Could not upload post.");
+        console.log(err);
         res.redirect('/posts/new');
     }
 };
