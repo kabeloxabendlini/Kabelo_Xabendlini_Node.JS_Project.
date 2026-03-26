@@ -41,7 +41,6 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
 }));
-
 app.use(flash());
 
 // Make session + flash available in all templates
@@ -53,33 +52,33 @@ app.use((req, res, next) => {
 
 // ===================== ROUTES =====================
 
-// Home page
-app.get('/', homeController);
+// Home page (only logged-in users)
+app.get('/', authMiddleware, homeController);
 
-// View single post
+// View single post (public)
 app.get('/post/:id', getPostController);
 
 // Create new post (protected)
 app.get('/posts/new', authMiddleware, newPostController);
 app.post('/posts/store', authMiddleware, validatePostMiddleware, storePostController);
 
-// Registration
+// Registration routes (guests only)
 app.get('/auth/register', redirectIfAuthenticated, newUserController);
-app.post('/users/register', storeUserController); // POST should NOT use redirectIfAuthenticated
+app.post('/users/register', storeUserController); // POST does not need redirect middleware
 
-// Login
+// Login routes (guests only)
 app.get('/auth/login', redirectIfAuthenticated, loginController);
-app.post('/users/login', loginUserController); // POST should NOT use redirectIfAuthenticated
+app.post('/users/login', loginUserController); // POST does not need redirect middleware
 
-// Logout
-app.get('/auth/logout', logoutController);
+// Logout (only for logged-in users)
+app.get('/auth/logout', authMiddleware, logoutController);
 
-// Test session route (temporary for debugging)
+// Test session route (temporary)
 app.get('/test-session', (req, res) => {
     res.send(req.session);
 });
 
-// 404 Page
+// 404 catch-all
 app.use((req, res) => res.status(404).render('notfound'));
 
 // ===================== DATABASE =====================

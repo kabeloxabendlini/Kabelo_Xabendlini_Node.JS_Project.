@@ -1,6 +1,5 @@
 // ---------------------- IMPORT MODULES ----------------------
-require('dotenv').config(); // Load environment variables
-
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
@@ -8,17 +7,16 @@ const fileUpload = require('express-fileupload');
 const expressSession = require('express-session');
 const flash = require('connect-flash');
 
-// Middleware
+// ---------------------- MIDDLEWARE ----------------------
 const validateMiddleWare = require('./middleware/validationMiddleware');
 const authMiddleware = require('./middleware/authMiddleware');
-const redirectIfAuthenticatedMiddleware = require('./middleware/redirectIfAuthenticatedMiddleware');
+const redirectIfAuthenticated = require('./middleware/redirectIfAuthenticatedMiddleware');
 
-// Controllers
+// ---------------------- CONTROLLERS ----------------------
 const homeController = require('./controllers/home');
 const newPostController = require('./controllers/newPost');
 const storePostController = require('./controllers/storePost');
 const getPostController = require('./controllers/getPost');
-const createPostController = require('./controllers/createPost');
 const newUserController = require('./controllers/newUser');
 const storeUserController = require('./controllers/storeUser');
 const loginController = require('./controllers/login');
@@ -27,79 +25,66 @@ const logoutController = require('./controllers/logout');
 
 // ---------------------- APP SETUP ----------------------
 const app = express();
-app.set('view engine', 'ejs'); // Use EJS templates
-global.loggedIn = null; // Track logged-in user globally
+app.set('view engine', 'ejs');
+global.loggedIn = null;
 
-// ---------------------- DATABASE CONNECTION ----------------------
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost/my_database';
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
+// ---------------------- DATABASE ----------------------
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/my_database', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log('✅ Connected to MongoDB'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ---------------------- MIDDLEWARE ----------------------
-// Serve static files
 app.use(express.static('public'));
-
-// Parse JSON and URL-encoded form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Enable file uploads
 app.use(fileUpload());
 
-// Validate incoming post requests
-app.use('/posts/store', validateMiddleWare);
-
-// Express session configuration
+// Session
 app.use(expressSession({
-    secret: process.env.SESSION_SECRET || 'keyboard cat', // Use secret from env
+    secret: process.env.SESSION_SECRET || 'keyboardcat',
     resave: false,
     saveUninitialized: false
 }));
 
-// Flash messages
+// Flash
 app.use(flash());
 
-// Track logged-in user for templates
-app.use('*', (req, res, next) => {
-    loggedIn = req.session.userId || null;
+// Make loggedIn and flash messages available to all views
+app.use((req, res, next) => {
+    global.loggedIn = req.session.userId || null;
+    res.locals.flashMessages = req.flash();
     next();
 });
 
 // ---------------------- ROUTES ----------------------
-// Home page
-app.get('/', homeController);
 
-// Single post page
+// Home page (requires auth)
+app.get('/', authMiddleware, homeController);
+
+// Single post page (public)
 app.get('/post/:id', getPostController);
 
-// Create post page (protected)
+// Create post page (requires auth)
 app.get('/posts/new', authMiddleware, newPostController);
+app.post('/posts/store', authMiddleware, validateMiddleWare, storePostController);
 
-// Alternate create page
-app.get('/posts/create', redirectIfAuthenticatedMiddleware, createPostController);
+// Auth routes for guests only
+app.get('/auth/register', redirectIfAuthenticated, newUserController);
+app.post('/users/register', redirectIfAuthenticated, storeUserController);
 
-// Store post (protected)
-app.post('/posts/store', authMiddleware, storePostController);
+app.get('/auth/login', redirectIfAuthenticated, loginController);
+app.post('/users/login', redirectIfAuthenticated, loginUserController);
 
-// Registration routes
-app.get('/auth/register', redirectIfAuthenticatedMiddleware, newUserController);
-app.post('/users/register', redirectIfAuthenticatedMiddleware, storeUserController);
+// Logout (requires auth)
+app.get('/auth/logout', authMiddleware, logoutController);
 
-// Login routes
-app.get('/auth/login', redirectIfAuthenticatedMiddleware, loginController);
-app.post('/users/login', redirectIfAuthenticatedMiddleware, loginUserController);
-
-// Logout
-app.get('/auth/logout', logoutController);
-
-// 404 Page (catch-all)
-app.use((req, res) => {
-    res.render('notfound');
-});
+// 404 catch-all
+app.use((req, res) => res.status(404).render('notfound'));
 
 // ---------------------- SERVER ----------------------
-const PORT = process.env.PORT || 4000; // Render assigns PORT automatically
-app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
-});
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`✅ App listening on port ${PORT}`));
+

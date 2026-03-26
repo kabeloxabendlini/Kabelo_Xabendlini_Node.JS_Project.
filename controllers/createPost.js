@@ -1,5 +1,8 @@
 // controllers/createPost.js
 module.exports = (req, res) => {
-  // Render the create post page
-  res.render('createPost'); // this will look for views/createPost.ejs
+    // Render the create post page
+    res.render('createPost', {
+        loggedIn: req.session.userId || null,
+        flashMessages: req.flash()
+    });
 };
