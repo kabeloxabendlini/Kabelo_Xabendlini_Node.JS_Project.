@@ -1,4 +1,4 @@
-const BlogPost = require('../models/BlogPost');
+const BlogPost = require('../models/blogPost');
 
 module.exports = async (req, res) => {
     try {
