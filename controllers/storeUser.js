@@ -1,18 +1,14 @@
-const bcrypt = require('bcrypt');
 const User = require('../models/User');
 
 module.exports = async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        // Hash password before saving
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create user
+        // Create user (password will be hashed by User model pre-save hook)
         await User.create({
             username,
             email,
-            password: hashedPassword
+            password
         });
 
         // Success feedback

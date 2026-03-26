@@ -38,6 +38,7 @@ module.exports = async (req, res) => {
         return res.redirect('/auth/login');
     }
 };
+
 // const bcrypt = require('bcrypt');
 // const User = require('../models/User');
 

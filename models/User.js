@@ -8,13 +8,18 @@ const UserSchema = new mongoose.Schema({
         required: [true, 'Please provide a username'],
         unique: true
     },
+    email: {
+        type: String,
+        required: [true, 'Please provide an email'],
+        unique: true
+    },
     password: {
         type: String,
         required: [true, 'Please provide a password']
     }
 });
 
-// Make username unique
+// Make username and email unique
 UserSchema.plugin(uniqueValidator);
 
 // Hash password before saving
