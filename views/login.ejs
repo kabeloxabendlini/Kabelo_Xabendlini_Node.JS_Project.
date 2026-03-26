@@ -24,22 +24,53 @@
   <!-- Main Content -->
   <div class="container">
     <div class="row">
-      <div class="col-lg-8 col-md-10 mx-auto">        
-        <form action="/users/login" method="POST" enctype="multipart/form-data">
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>User Name</label>
-              <input type="text" class="form-control" placeholder="User Name" id="username" name="username">              
-            </div>
+      <div class="col-lg-8 col-md-10 mx-auto">
+
+        <!-- Flash Error Message -->
+        <% if (flashMessages.loginError && flashMessages.loginError.length > 0) { %>
+          <div class="alert alert-danger">
+            <%= flashMessages.loginError[0] %>
           </div>
-          <div class="control-group">
-            <div class="form-group floating-label-form-group controls">
-              <label>Password</label>
-              <input type="password" class="form-control" id="password" name="password">              
-            </div>
-          </div>                   
-          <br>          
-          <button type="submit" class="btn btn-primary" >Login</button>
+        <% } %>
+
+        <!-- Flash Success Message -->
+        <% if (flashMessages.success && flashMessages.success.length > 0) { %>
+          <div class="alert alert-success">
+            <%= flashMessages.success[0] %>
+          </div>
+        <% } %>
+
+        <form action="/users/login" method="POST">
+
+          <!-- Username Field -->
+          <div class="form-group mb-3">
+            <label for="username">Username</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Enter your username" 
+              id="username" 
+              name="username"
+              value="<%= flashMessages.data && flashMessages.data[0] ? flashMessages.data[0].username : '' %>"
+              required>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group mb-3">
+            <label for="password">Password</label>
+            <input 
+              type="password" 
+              class="form-control" 
+              placeholder="Enter your password" 
+              id="password" 
+              name="password"
+              required>
+          </div>
+
+          <br>
+          <button type="submit" class="btn btn-primary">Login</button>
+          <a href="/auth/register" class="btn btn-link">Don't have an account? Register</a>
+
         </form>
       </div>
     </div>
