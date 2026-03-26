@@ -1,5 +1,5 @@
 const cloudinary = require('../config/cloudinary');
-const Post = require('../models/Post');
+const BlogPost = require('../models/blogPost');
 
 module.exports = async (req, res) => {
   try {
@@ -24,7 +24,7 @@ module.exports = async (req, res) => {
     }
 
     // Create new post in database
-    await Post.create({
+    await BlogPost.create({
       title: req.body.title,
       body: req.body.body,
       image: imageUrl,

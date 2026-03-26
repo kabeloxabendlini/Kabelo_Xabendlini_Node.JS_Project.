@@ -14,15 +14,15 @@ const BlogPostSchema = new Schema({
     userid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false
     },
     datePosted: {
         type: Date,
-        default: Date.now   // FIXED
+        default: Date.now
     },
     image: {
-        type: String,        // Cloudinary URL
-        required: true
+        type: String,
+        required: false // not required so posts without images still work
     }
 });
 
