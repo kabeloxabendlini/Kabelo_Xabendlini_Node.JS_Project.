@@ -41,13 +41,6 @@
           <img src="/img/post-bg.jpg" class="img-fluid w-100 rounded shadow" alt="Post Image" style="max-height: 500px; object-fit: cover;">
         </div>
 
-        <!-- Display uploaded image below astronaut image if it exists -->
-        <% if(blogpost.image) { %>
-          <div class="post-image-wrapper mb-4">
-            <img src="<%= blogpost.image %>" class="img-fluid w-100 rounded shadow" alt="Post Image" style="max-height: 500px; object-fit: cover;">
-          </div>
-        <% } %>
-
         <!-- Render Summernote HTML content -->
         <div class="blog-post-body">
           <%- blogpost.body %>
