@@ -3,78 +3,83 @@
 
 <%- include('layouts/header'); -%>
 
-<body>
+  <body>
 
-  <%- include('layouts/navbar'); -%>
+    <%- include('layouts/navbar'); -%>
 
-  <!-- Page Header — uses blog post image as background if available -->
-  <header class="masthead" style="background-image: url('<%= blogpost.image ? blogpost.image : "/img/post-bg.jpg" %>')">
-    <div class="overlay"></div>
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 col-md-10 mx-auto">
-          <div class="post-heading">
-            <h1><%= blogpost.title %></h1>
-            <span class="subheading">
-              <%= blogpost.body.replace(/<[^>]*>/g, '').substring(0, 120) %> ...
-            </span>
-            <span class="meta">
-              Posted by <a href="#">
-                <%= blogpost.userid ? blogpost.userid.username : 'Unknown' %>
-              </a>
-              on <%= blogpost.datePosted ? blogpost.datePosted.toDateString() : 'Unknown date' %>
-            </span>
+      <!-- Page Header — uses blog post image as background if available -->
+      <header class="masthead" style="background-image: url('<%= blogpost.image ? blogpost.image : " /img/post-bg.jpg"
+        %>')">
+        <div class="overlay"></div>
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
+              <div class="post-heading">
+                <h1>
+                  <%= blogpost.title %>
+                </h1>
+                <span class="subheading">
+                  <%= blogpost.body.replace(/<[^>]*>/g, '').substring(0, 120) %> ...
+                </span>
+                <span class="meta">
+                  Posted by <a href="#">
+                    <%= blogpost.userid ? blogpost.userid.username : 'Unknown' %>
+                  </a>
+                  on <%= blogpost.datePosted ? blogpost.datePosted.toDateString() : 'Unknown date' %>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </header>
+      </header>
 
- <!-- Post Content -->
-<article>
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-md-10 mx-auto">
+      <!-- Post Content -->
+      <article>
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-8 col-md-10 mx-auto">
 
-        <!-- Images side by side -->
-        <div class="row mb-4">
+              <!-- Images side by side -->
+              <div class="row mb-4">
 
-          <!-- Astronaut image always shown -->
-          <div class="col-6">
-            <img src="/img/post-bg.jpg" class="img-fluid w-100 rounded shadow" alt="Default Image" style="max-height: 300px; object-fit: cover;">
+                <!-- Astronaut image always shown -->
+                <div class="col-6">
+                  <img src="/img/post-bg.jpg" class="img-fluid w-100 rounded shadow" alt="Default Image"
+                    style="max-height: 300px; object-fit: cover;">
+                </div>
+
+                <!-- Uploaded blog post image -->
+                <% if(blogpost.image) { %>
+                  <div class="col-6">
+                    <img src="<%= blogpost.image %>" class="img-fluid w-100 rounded shadow" alt="Post Image"
+                      style="max-height: 300px; object-fit: cover;">
+                  </div>
+                  <% } %>
+
+              </div>
+
+              <!-- Render Summernote HTML content -->
+              <div class="blog-post-body" style="font-size: 1.3em; line-height: 1.8;">
+                <%- blogpost.body %>
+              </div>
+
+              <hr>
+
+              <!-- Back to Home button -->
+              <div class="text-center mt-4 mb-4">
+                <a href="/" class="btn btn-primary">← Back to Home</a>
+              </div>
+
+            </div>
           </div>
-
-          <!-- Uploaded blog post image -->
-          <% if(blogpost.image) { %>
-          <div class="col-6">
-            <img src="<%= blogpost.image %>" class="img-fluid w-100 rounded shadow" alt="Post Image" style="max-height: 300px; object-fit: cover;">
-          </div>
-          <% } %>
-
         </div>
+      </article>
 
-        <!-- Render Summernote HTML content -->
-        <div class="blog-post-body">
-          <%- blogpost.body %>
-        </div>
+      <hr>
 
-        <hr>
+      <%- include('layouts/footer'); -%>
+        <%- include('layouts/scripts'); -%>
 
-        <!-- Back to Home button -->
-        <div class="text-center mt-4 mb-4">
-          <a href="/" class="btn btn-primary">← Back to Home</a>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</article>
-
-  <hr>
-
-  <%- include('layouts/footer'); -%>
-  <%- include('layouts/scripts'); -%>
-
-</body>
+  </body>
 
 </html>
