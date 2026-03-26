@@ -5,15 +5,20 @@ const PostSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    content: {
+    body: {
         type: String,
         required: true
     },
     image: {
-        type: String, // filename or URL
+        type: String,
         required: false
     },
-    createdAt: {
+    userid: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
+    },
+    datePosted: {
         type: Date,
         default: Date.now
     }
